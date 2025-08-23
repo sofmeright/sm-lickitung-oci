@@ -1,17 +1,21 @@
 # syntax=docker/dockerfile:1.7
 FROM alpine:3.22
 
-RUN apk add --no-cache nginx ca-certificates tzdata \
- && mkdir -p /var/cache/nginx /var/run/nginx /etc/nginx/http.d
+# Install nginx
+RUN apk add --no-cache nginx ca-certificates tzdata
 
-# Our top-level nginx.conf: includes mime.types and http.d
+# Create paths nginx expects
+RUN mkdir -p /var/cache/nginx /var/run/nginx /etc/nginx/conf.d
+
+# Copy nginx configs
 COPY nginx.conf /etc/nginx/nginx.conf
+COPY default.conf /etc/nginx/conf.d/default.conf
 
-# Our vhost
-COPY 00-app.conf /etc/nginx/http.d/00-app.conf
-
-# Your app files (or bind mount at runtime)
+# Copy your static site into the web root
 COPY www-data/ /usr/share/nginx/html/
+
+# (Optional) set sensible perms
+RUN chown -R nginx:nginx /usr/share/nginx/html /var/cache/nginx /var/run/nginx
 
 EXPOSE 80
 STOPSIGNAL SIGQUIT
