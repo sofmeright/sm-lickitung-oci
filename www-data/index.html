@@ -28,7 +28,7 @@
 
     .card {
       width: 100%;
-      max-width: 520px;
+      max-width: 580px;
       background: #161b22;
       border: 1px solid #30363d;
       border-radius: 12px;
@@ -38,15 +38,19 @@
     h1 {
       font-size: 1.35rem;
       font-weight: 600;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
       color: #f0f6fc;
     }
 
-    .subtitle {
-      font-size: 0.875rem;
+    .note {
+      font-size: 0.825rem;
       color: #8b949e;
       line-height: 1.5;
       margin-bottom: 1.75rem;
+      padding: 0.75rem 1rem;
+      background: #0d1117;
+      border-left: 3px solid #58a68b;
+      border-radius: 0 6px 6px 0;
     }
 
     label {
@@ -59,26 +63,36 @@
       margin-bottom: 0.5rem;
     }
 
-    .input-group {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1.5rem;
+    .validation-msg {
+      font-size: 0.75rem;
+      color: #f85149;
+      min-height: 1.25rem;
+      margin-top: 0.35rem;
+      margin-bottom: 0.5rem;
     }
 
     input {
-      flex: 1;
+      width: 100%;
       background: #0d1117;
       border: 1px solid #30363d;
       border-radius: 6px;
-      padding: 0.65rem 0.85rem;
+      padding: 0.75rem 0.95rem;
       color: #e6edf3;
       font-family: "Monofur", "SF Mono", Consolas, monospace;
-      font-size: 0.9rem;
+      font-size: 1.05rem;
       outline: none;
       transition: border-color 0.15s;
     }
 
     input:focus {
+      border-color: #58a68b;
+    }
+
+    input.invalid {
+      border-color: #f85149;
+    }
+
+    input.valid {
       border-color: #58a68b;
     }
 
@@ -108,11 +122,27 @@
     }
 
     .output-section {
+      margin-top: 1.5rem;
       margin-bottom: 1.75rem;
     }
 
-    .output-section input {
-      width: 100%;
+    .output-group {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .output-group input {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .copy-btn {
+      padding: 0.75rem 0.95rem;
+      font-size: 0.8rem;
+    }
+
+    .copy-btn.copied {
+      background: #74ecbe;
     }
 
     hr {
@@ -141,24 +171,97 @@
 <body>
   <div class="card">
     <h1>SuperMicro IPMI License Generator</h1>
-    <p class="subtitle">Generate activation license keys for SuperMicro motherboard IPMI. Enter your BMC MAC address below.</p>
+    <p class="note">This tool calculates the IPMI license key for SuperMicro motherboards when you provide a valid BMC-MAC.</p>
 
-    <label for="input">BMC MAC Address</label>
-    <div class="input-group">
-      <input id="input" type="text" placeholder="0c:c4:7a:3e:2f:de" spellcheck="false" autocomplete="off" />
-      <button id="button">Generate</button>
-    </div>
+    <label for="input">IPMI BMC-MAC</label>
+    <input id="input" type="text" placeholder="0c:c4:7a:3e:2f:de" spellcheck="false" autocomplete="off" maxlength="17" />
+    <div id="validation" class="validation-msg"></div>
 
     <div class="output-section">
       <label for="output">License Key</label>
-      <input id="output" type="text" readonly placeholder="Click generate" onclick="this.select()" />
+      <div class="output-group">
+        <input id="output" type="text" readonly />
+        <button id="copy-btn" class="copy-btn" style="display:none">Copy</button>
+      </div>
     </div>
 
     <hr />
     <div class="footer">
-      <p>Based on <a href="https://github.com/kasuganosoras/SuperMicro-IPMI-LicenseGenerator" target="_blank" rel="noopener">kasuganosoras/SuperMicro-IPMI-LicenseGenerator</a></p>
+      <p><a href="https://github.com/sofmeright/sm-lickitung-oci" target="_blank" rel="noopener">GitHub</a> &middot; <a href="https://hub.docker.com/r/prplanit/sm-lickitung-oci" target="_blank" rel="noopener">Docker Hub</a> &middot; <a href="https://github.com/kasuganosoras/SuperMicro-IPMI-LicenseGenerator" target="_blank" rel="noopener">GitHub (original)</a></p>
+      <p>Credits: <a href="https://www.v2ex.com/member/azh7138m" target="_blank" rel="noopener">@azh7138m</a>, <a href="https://github.com/Seldaek" target="_blank" rel="noopener">@Seldaek</a></p>
     </div>
   </div>
+
+  <!-- hidden button for main.js compatibility -->
+  <button id="button" style="display:none"></button>
+
   <script src="./src/main.js"></script>
+  <script>
+    (function () {
+      var macInput = document.getElementById("input");
+      var output = document.getElementById("output");
+      var genBtn = document.getElementById("button");
+      var copyBtn = document.getElementById("copy-btn");
+      var validation = document.getElementById("validation");
+      var macRegex = /^[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}:[0-9a-f]{2}$/i;
+
+      function isValidMac(val) {
+        return macRegex.test(val.trim());
+      }
+
+      // Auto-format + auto-generate on valid MAC
+      macInput.addEventListener("input", function () {
+        var pos = macInput.selectionStart;
+        var raw = macInput.value.replace(/[^0-9a-fA-F]/g, "").substring(0, 12);
+        var formatted = raw.match(/.{1,2}/g);
+        var newVal = formatted ? formatted.join(":") : "";
+        var lenDiff = newVal.length - macInput.value.length;
+        macInput.value = newVal;
+        macInput.setSelectionRange(pos + lenDiff, pos + lenDiff);
+
+        if (isValidMac(newVal)) {
+          macInput.classList.remove("invalid");
+          macInput.classList.add("valid");
+          validation.textContent = "";
+          // Trigger generation via the hidden button
+          genBtn.click();
+          copyBtn.style.display = "";
+        } else {
+          macInput.classList.remove("valid");
+          output.value = "";
+          copyBtn.style.display = "none";
+          if (raw.length > 0 && raw.length < 12) {
+            validation.textContent = "";
+          } else if (raw.length === 0) {
+            validation.textContent = "";
+          }
+        }
+      });
+
+      // Handle paste of raw hex without colons
+      macInput.addEventListener("paste", function () {
+        setTimeout(function () {
+          macInput.dispatchEvent(new Event("input"));
+        }, 0);
+      });
+
+      // Copy to clipboard
+      copyBtn.addEventListener("click", function () {
+        navigator.clipboard.writeText(output.value).then(function () {
+          copyBtn.textContent = "Copied!";
+          copyBtn.classList.add("copied");
+          setTimeout(function () {
+            copyBtn.textContent = "Copy";
+            copyBtn.classList.remove("copied");
+          }, 1500);
+        });
+      });
+
+      // Click output to select all
+      output.addEventListener("click", function () {
+        this.select();
+      });
+    })();
+  </script>
 </body>
 </html>

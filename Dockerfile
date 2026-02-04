@@ -2,7 +2,7 @@
 FROM alpine:3.23
 
 # Install nginx
-RUN apk add --no-cache nginx ca-certificates tzdata
+RUN apk add --no-cache nginx ca-certificates tzdata gettext
 
 # Create paths nginx expects
 RUN mkdir -p /var/cache/nginx /etc/nginx/conf.d /etc/nginx/templates
