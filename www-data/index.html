@@ -1,39 +1,164 @@
 <!DOCTYPE html>
-<html lang="en-US">
-        <head>
-                <meta charset="UTF-8" />
-                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-                <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" crossorigin="anonymous" />
-                <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
-                <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js" crossorigin="anonymous"></script>
-                <title>SuperMicro IPMI License Generator</title>
-                <style>body{background:#eee}.form-control{font-family:Consolas;}.main{margin-top:64px;border:1px solid #ccc;padding:10px 32px 16px 32px;background:#FFF;box-shadow:0px 0px 12px rgba(0,0,0,0.3)}</style>
-        </head>
-        <body>
-                <div class="container">
-                        <div class="row">
-                                <div class="col-sm-3"></div>
-                                <div class="col-sm-6 main">
-                                        <h3>SuperMicro IPMI License Generator</h3>
-                                        <p>This is a helpful tool, It can generate the SuperMicro's motherboard IPMI Activate License keys, And it is free and open-source.</p>
-                                        <hr />
-                                        <p>First, input your IPMI BMC-MAC here (example "0c:c4:7a:3e:2f:de"):</p>
-                                        <p><div class="input-group">
-                                                <input id="input" class="form-control" placeholder="You BMC-MAC" />
-                                                <span class="input-group-btn">
-                                                        <button class="btn btn-default" id="button">Generate</button>
-                                                </span>
-                                        </div></p>
-                                        <p>Then, click the Generate button, your will get the license key:</p>
-                                        <p><input id="output" class="form-control" readonly placeholder="License Key" onclick="this.select()" /></p>
-                                        <p>If you like this tool, please give me a star, thank you.</p>
-                                        <hr>
-                                        <p>Github project: <a href="https://github.com/kasuganosoras/SuperMicro-IPMI-LicenseGenerator" target="_blank">kasuganosoras/SuperMicro-IPMI-LicenseGenerator</a></p>
-                                        <p>Thanks for: <a href="https://www.v2ex.com/member/azh7138m" target="_blank">@azh7138m</a>, <a href="https://github.com/Seldaek" target="_blank">@Seldaek</a></p>
-                                </div>
-                        </div>
-                </div>
-                <script src="./src/main.js"></script>
-        </body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SuperMicro IPMI License Generator</title>
+  <style>
+    @font-face {
+      font-family: "Monofur";
+      src: url("./fonts/monofur.woff2") format("woff2");
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 520px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 2.5rem;
+    }
+
+    h1 {
+      font-size: 1.35rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #f0f6fc;
+    }
+
+    .subtitle {
+      font-size: 0.875rem;
+      color: #8b949e;
+      line-height: 1.5;
+      margin-bottom: 1.75rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    input {
+      flex: 1;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 0.65rem 0.85rem;
+      color: #e6edf3;
+      font-family: "Monofur", "SF Mono", Consolas, monospace;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input:focus {
+      border-color: #58a68b;
+    }
+
+    input::placeholder {
+      color: #484f58;
+    }
+
+    input[readonly] {
+      cursor: pointer;
+    }
+
+    button {
+      background: #58a68b;
+      color: #0d1117;
+      border: none;
+      border-radius: 6px;
+      padding: 0.65rem 1.25rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+
+    button:hover {
+      background: #74ecbe;
+    }
+
+    .output-section {
+      margin-bottom: 1.75rem;
+    }
+
+    .output-section input {
+      width: 100%;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #21262d;
+      margin-bottom: 1rem;
+    }
+
+    .footer {
+      font-size: 0.8rem;
+      color: #484f58;
+      line-height: 1.6;
+    }
+
+    .footer a {
+      color: #58a68b;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      color: #74ecbe;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>SuperMicro IPMI License Generator</h1>
+    <p class="subtitle">Generate activation license keys for SuperMicro motherboard IPMI. Enter your BMC MAC address below.</p>
+
+    <label for="input">BMC MAC Address</label>
+    <div class="input-group">
+      <input id="input" type="text" placeholder="0c:c4:7a:3e:2f:de" spellcheck="false" autocomplete="off" />
+      <button id="button">Generate</button>
+    </div>
+
+    <div class="output-section">
+      <label for="output">License Key</label>
+      <input id="output" type="text" readonly placeholder="Click generate" onclick="this.select()" />
+    </div>
+
+    <hr />
+    <div class="footer">
+      <p>Based on <a href="https://github.com/kasuganosoras/SuperMicro-IPMI-LicenseGenerator" target="_blank" rel="noopener">kasuganosoras/SuperMicro-IPMI-LicenseGenerator</a></p>
+    </div>
+  </div>
+  <script src="./src/main.js"></script>
+</body>
 </html>
