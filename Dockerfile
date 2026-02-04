@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-FROM alpine:3.22
+FROM alpine:3.23
 
 # Install nginx
 RUN apk add --no-cache nginx ca-certificates tzdata
