@@ -5,18 +5,25 @@ FROM alpine:3.22
 RUN apk add --no-cache nginx ca-certificates tzdata
 
 # Create paths nginx expects
-RUN mkdir -p /var/cache/nginx /var/run/nginx /etc/nginx/conf.d
+RUN mkdir -p /var/cache/nginx /etc/nginx/conf.d /etc/nginx/templates
 
 # Copy nginx configs
 COPY nginx.conf /etc/nginx/nginx.conf
-COPY default.conf /etc/nginx/conf.d/default.conf
+COPY default.conf.template /etc/nginx/templates/default.conf.template
+
+# Copy entrypoint
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Copy your static site into the web root
 COPY www-data/ /usr/share/nginx/html/
 
-# (Optional) set sensible perms
-RUN chown -R nginx:nginx /usr/share/nginx/html /var/cache/nginx /var/run/nginx
+# Set ownership for non-root operation
+RUN chown -R nginx:nginx /usr/share/nginx/html /var/cache/nginx /etc/nginx/conf.d
 
-EXPOSE 80
+ENV LISTEN_PORT=8080
+
+EXPOSE 8080
+USER nginx
 STOPSIGNAL SIGQUIT
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/entrypoint.sh"]
